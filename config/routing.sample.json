@@ -1,0 +1,95 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "//": "Multi-model routing: a cheap coordinator plus specialists that each pay for their own step count. Merge into opencode.json alongside the providers block from opencode.sample.json.",
+
+  "model": "neuroapi/qwen3.7-flash",
+  "small_model": "neuroapi/qwen3.7-flash",
+  "subagent_depth": 2,
+
+  "compaction": {
+    "auto": true,
+    "keep": { "tokens": 12000 },
+    "buffer": "20%"
+  },
+  "tool_output": { "max_lines": 800, "max_bytes": 24000 },
+  "experimental": { "todo": true },
+
+  "agents": {
+    "build": {
+      "description": "Coordinator: decomposition, task briefs for subagents, review of their output. Cheap and multimodal, because it pays for every step of the session.",
+      "model": "neuroapi/qwen3.8-omni-flash"
+    },
+    "worker": {
+      "description": "Bulk mechanical edits to a precise spec: renames, moves, templates, mass replacements, splitting large files. The default workhorse.",
+      "model": "neuroapi/glm-5.3-flash",
+      "mode": "subagent",
+      "steps": 15
+    },
+    "coder": {
+      "description": "Writes and fixes code from a spec. Escalation only, for genuinely hard code; the coordinator decides and states the cost first.",
+      "model": "neuroapi/claude-sonnet-5-5",
+      "mode": "subagent",
+      "steps": 4
+    },
+    "architect": {
+      "description": "Complex design, architecture, subtle bugs, reasoning. Read-only.",
+      "model": "neuroapi/gemini-3.8-flash",
+      "mode": "subagent",
+      "steps": 4,
+      "permissions": [{ "action": "edit", "resource": "*", "effect": "deny" }]
+    },
+    "explore": {
+      "description": "Fast recon: code reading, search, extracts. Read-only.",
+      "model": "neuroapi/qwen3.7-flash",
+      "steps": 6,
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" }
+      ]
+    },
+    "reviewer": {
+      "description": "Reviews a finished diff for regressions and security. Cheap and mean.",
+      "model": "neuroapi/hy4-flash",
+      "mode": "subagent",
+      "steps": 4,
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" }
+      ]
+    },
+    "plan": {
+      "description": "Planning without edits: read-only.",
+      "model": "neuroapi/gemini-3.8-flash",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" }
+      ]
+    },
+    "general": { "model": "neuroapi/gemini-3.8-flash", "steps": 8 },
+    "title": { "model": "neuroapi/qwen3.7-flash" },
+    "summary": { "model": "neuroapi/qwen3.7-flash" },
+    "compaction": { "model": "neuroapi/qwen3.7-flash" }
+  },
+
+  "//plugins": "Hard price ceiling: disables any model whose worst-case tier exceeds the threshold, including providers you did not declare by hand. Requires cost arrays on the models. See docs/plugins.md.",
+  "plugins": [
+    {
+      "package": "./plugins/budget-guard",
+      "options": {
+        "maxInputUsd": 4.0,
+        "maxOutputUsd": 20.0,
+        "mode": "disable",
+        "allow": [
+          "qwen3.8-omni-flash",
+          "qwen3.7-flash",
+          "qwen3.8-flash",
+          "glm-5.3-flash",
+          "hy4-flash",
+          "gemini-3.8-flash",
+          "claude-sonnet-5-5"
+        ]
+      }
+    }
+  ]
+}
