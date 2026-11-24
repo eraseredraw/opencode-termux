@@ -1,0 +1,100 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "neuroapi/qwen3.8-flash",
+  "update": "notify",
+  "agents": {
+    "title": { "model": "neuroapi/qwen3.7-flash" }
+  },
+  "providers": {
+    "neuroapi": {
+      "name": "NeuroAPI",
+      "env": ["NEUROAPI_API_KEY"],
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://neuroapi.host/v1",
+        "apiKey": "{env:NEUROAPI_API_KEY}",
+        "chunkTimeout": false
+      },
+      "models": {
+        "qwen3.7-flash": {
+          "modelID": "qwen3.7-flash",
+          "name": "Qwen 3.7 Flash",
+          "capabilities": { "tools": true, "input": ["text", "image", "video"], "output": ["text"] },
+          "limit": { "context": 1000000, "output": 64000 },
+          "compatibility": { "maxTokensField": "max_completion_tokens" }
+        },
+        "qwen3.7-plus": {
+          "modelID": "qwen3.7-plus",
+          "name": "Qwen 3.7 Plus",
+          "capabilities": { "tools": true, "input": ["text", "image", "video"], "output": ["text"] },
+          "limit": { "context": 1000000, "output": 64000 },
+          "compatibility": { "maxTokensField": "max_completion_tokens" }
+        },
+        "qwen3.8-flash": {
+          "modelID": "qwen3.8-flash",
+          "name": "Qwen 3.8 Flash",
+          "capabilities": { "tools": true, "input": ["text", "image", "video"], "output": ["text"] },
+          "limit": { "context": 262144, "output": 64000 },
+          "compatibility": { "maxTokensField": "max_completion_tokens" }
+        },
+        "kimi-k2.7-code": {
+          "modelID": "kimi-k2.7-code",
+          "name": "Kimi K2.7 Code",
+          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
+          "limit": { "context": 262144, "output": 64000 }
+        },
+        "qwen-image-3.0": {
+          "modelID": "qwen-image-3.0",
+          "name": "Qwen Image 3.0",
+          "type": "image",
+          "disabled": true
+        },
+        "text-embedding-v4": {
+          "modelID": "text-embedding-v4",
+          "name": "Text Embedding v4",
+          "type": "embedding",
+          "disabled": true
+        }
+      }
+    },
+    "openrouter-free": {
+      "name": "OpenRouter (free tier, fallback)",
+      "env": ["OPENROUTER_API_KEY"],
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://openrouter.ai/api/v1",
+        "apiKey": "{env:OPENROUTER_API_KEY}"
+      },
+      "models": {
+        "openrouter/free:free": {
+          "modelID": "openrouter/free:free",
+          "name": "OpenRouter Free Auto-Router",
+          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
+          "limit": { "context": 200000, "output": 32000 }
+        },
+        "nvidia/nemotron-3.5-lightning:free": {
+          "modelID": "nvidia/nemotron-3.5-lightning:free",
+          "name": "Nemotron 3.5 Lightning",
+          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
+          "limit": { "context": 1000000, "output": 64000 }
+        }
+      }
+    }
+  },
+  "mcp": {
+    "timeout": { "catalog": 60000, "execution": 120000 },
+    "servers": {
+      "memory": {
+        "type": "local",
+        "command": ["mcp-server-memory"],
+        "environment": { "MEMORY_FILE_PATH": "~/.local/share/opencode/memory.json" }
+      },
+      "fetch": { "type": "local", "command": ["mcp-fetch"] },
+      "sequential-thinking": {
+        "type": "local",
+        "command": ["mcp-sequential-thinking"],
+        "disabled": true
+      }
+    }
+  }
+}
